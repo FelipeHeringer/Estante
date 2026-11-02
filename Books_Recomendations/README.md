@@ -1,12 +1,12 @@
-# Books Recomendations
+﻿# Books Recomendations
 
-Clusterização/recomendação de livros com o dataset público **Goodreads (UCSD Book Graph)**.
-Os datasets não estão no repositório (vários GB) — siga os passos abaixo para reproduzir.
+ClusterizaÃ§Ã£o/recomendaÃ§Ã£o de livros com o dataset pÃºblico **Goodreads (UCSD Book Graph)**.
+Os datasets nÃ£o estÃ£o no repositÃ³rio (vÃ¡rios GB) â€” siga os passos abaixo para reproduzir.
 
 ## 1. Baixar o dataset
 
-Página oficial: <https://mengtingwan.github.io/data/goodreads.html>
-(os arquivos são servidos por links do Google Drive listados na página).
+PÃ¡gina oficial: <https://mengtingwan.github.io/data/goodreads.html>
+(os arquivos sÃ£o servidos por links do Google Drive listados na pÃ¡gina).
 
 Baixe estes arquivos:
 
@@ -22,28 +22,27 @@ Estrutura final esperada:
 
 ```
 Books_Recomendations/
-├── goodreads_books/goodreads_books.json
-├── goodreads_book_authors/goodreads_book_authors.json
-├── goodreads_book_genres_initial/goodreads_book_genres_initial.json
-├── goodreads_interactions.csv
-├── book_id_map.csv
-├── build_books_parquet.py
-└── clustering_model.ipynb
+â”œâ”€â”€ goodreads_books/goodreads_books.json
+â”œâ”€â”€ goodreads_book_authors/goodreads_book_authors.json
+â”œâ”€â”€ goodreads_book_genres_initial/goodreads_book_genres_initial.json
+â”œâ”€â”€ goodreads_interactions.csv
+â”œâ”€â”€ book_id_map.csv
+â”œâ”€â”€ build_books_parquet.py
+â””â”€â”€ clustering_model.ipynb
 ```
 
-> Espaço em disco: ~15 GB descompactado (`goodreads_books.json` ≈ 9 GB, interações ≈ 4 GB).
+> EspaÃ§o em disco: ~15 GB descompactado (`goodreads_books.json` â‰ˆ 9 GB, interaÃ§Ãµes â‰ˆ 4 GB).
 
-## 2. Instalar dependências
+## 2. Instalar dependÃªncias
 
 ```bash
 pip install pipenv
 pipenv install
-pipenv install orjson pyarrow   # usados pelo script e pelo read_parquet
 ```
 
 ## 3. Gerar o `books.parquet` (uma vez)
 
-O JSON de livros é grande demais para o pandas, então o script lê linha a linha e salva só as colunas necessárias (~100 MB):
+O JSON de livros Ã© grande demais para o pandas, entÃ£o o script lÃª linha a linha e salva sÃ³ as colunas necessÃ¡rias (~100 MB):
 
 ```bash
 pipenv run python build_books_parquet.py
@@ -52,16 +51,16 @@ pipenv run python build_books_parquet.py
 ## 4. Rodar o notebook
 
 Abra `clustering_model.ipynb` (kernel do pipenv) e execute **Run All**.
-Os DataFrames **são criados em memória pelo próprio notebook** — nada além do passo 3 precisa ser feito antes:
+Os DataFrames **sÃ£o criados em memÃ³ria pelo prÃ³prio notebook** â€” nada alÃ©m do passo 3 precisa ser feito antes:
 
 | DataFrame | Origem |
 |---|---|
 | `interactions_data` | `goodreads_interactions.csv` agregado por livro em chunks + `book_id_map.csv` |
 | `books` | `books.parquet` |
-| `primary` | autor primário de cada livro (derivado de `books`) |
+| `primary` | autor primÃ¡rio de cada livro (derivado de `books`) |
 | `genres` | `goodreads_book_genres_initial.json` |
 | `authors` | `goodreads_book_authors.json` |
-| **`books_df`** | merge de todos acima: 1 linha por `book_id`, ~2,36M linhas × 29 colunas (~600 MB em RAM) |
+| **`books_df`** | merge de todos acima: 1 linha por `book_id`, ~2,36M linhas Ã— 29 colunas (~600 MB em RAM) |
 
-A agregação das interações (~228M linhas) é a etapa mais lenta; leva alguns minutos.
-Descrição detalhada das colunas e da qualidade dos dados: [Data_Understanding.md](Data_Understanding.md).
+A agregaÃ§Ã£o das interaÃ§Ãµes (~228M linhas) Ã© a etapa mais lenta; leva alguns minutos.
+DescriÃ§Ã£o detalhada das colunas e da qualidade dos dados: [Data_Understanding.md](Data_Understanding.md).
