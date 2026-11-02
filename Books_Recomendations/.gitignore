@@ -1,0 +1,6 @@
+﻿# Datasets (grandes demais para o GitHub; baixar do Goodreads/UCSD)
+*.json
+*.parquet
+*.csv
+__pycache__/
+.claude/
