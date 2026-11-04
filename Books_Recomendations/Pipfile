@@ -9,6 +9,7 @@ ipykernel = "*"
 matplotlib = "*"
 orjson = "*"
 pyarrow = "*"
+scipy = "*"
 
 [dev-packages]
 nbconvert = "*"
