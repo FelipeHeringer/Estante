@@ -64,3 +64,22 @@ Os DataFrames **são criados em memória pelo próprio notebook** — nada além
 
 A agregação das interações (~228M linhas) é a etapa mais lenta; leva alguns minutos.
 Descrição detalhada das colunas e da qualidade dos dados: [Data_Understanding.md](Data_Understanding.md).
+
+## 5. Modelagem e avaliação
+
+Depois do passo 4 (que grava `books_df.parquet` ao final), execute na ordem:
+
+| # | Comando / notebook | Gera |
+|---|---|---|
+| 1 | `pipenv run python extract_user_sample.py` | `user_interactions.parquet` (50 mil usuários com ≥ 20 avaliações) |
+| 2 | `02_gmm_livros.ipynb` | `book_probs.parquet`, `book_vectors.parquet`, `book_meta.parquet`, `gmm_books.joblib` |
+| 3 | `03_gmm_usuarios.ipynb` | `user_profiles.parquet`, `user_segments.parquet`, `gmm_users.joblib` |
+| 4 | `04_rede_neural_avaliacao.ipynb` | `mlp.joblib`, `results.csv`, `figures/` |
+
+A lógica testável (features, perfil do usuário, métricas, candidatos, recomendação) fica em `recsys.py`:
+
+```bash
+pipenv run pytest -q
+```
+
+Resultados da avaliação offline (Hit/Recall/NDCG@10, pool de até 5 positivos + 99 negativos por usuário de teste) ficam em `results.csv` e nas saídas do notebook 04.
