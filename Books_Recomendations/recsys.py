@@ -68,21 +68,29 @@ def split_user(book_ids, ratings, seed, n_profile=5):
     return book_ids[p], ratings[p], book_ids[h], ratings[h]
 
 
+def cluster_score(profile, probs, popularity):
+    """Afinidade de cluster (perfil . probs do livro) x log1p(popularidade). Baseline (b) e candidatos."""
+    return (np.asarray(probs) @ profile) * np.log1p(np.asarray(popularity, dtype=float))
+
+
 def generate_candidates(profile, book_probs, popularity, exclude, n):
-    """Candidatos por afinidade de cluster x log da popularidade, sem os livros em exclude."""
+    """Candidatos por cluster_score, sem os livros em exclude."""
     pop = popularity.reindex(book_probs.index).fillna(0).to_numpy()
-    score = (book_probs.to_numpy() @ profile) * np.log1p(pop)
+    score = cluster_score(profile, book_probs.to_numpy(), pop)
     score[book_probs.index.isin(list(exclude))] = -np.inf
     order = np.argsort(-score, kind="stable")[:n]
     return [int(book_probs.index[i]) for i in order if np.isfinite(score[i])]
 
 
 def pair_features(profile, segment_probs, book_vector):
-    """Entrada da rede: perfil + segmento + vetor do livro (1D -> 1D; 2D -> uma linha por livro)."""
+    """Entrada da rede: perfil + segmento + vetor do livro + afinidade (1D -> 1D; 2D -> uma linha por livro).
+
+    O vetor do livro deve terminar com as len(profile) probabilidades de cluster do livro."""
     bv = np.asarray(book_vector, dtype=float)
     b2 = np.atleast_2d(bv)
     head = np.concatenate([profile, segment_probs])
-    X = np.hstack([np.tile(head, (len(b2), 1)), b2])
+    affinity = b2[:, -len(profile):] @ profile
+    X = np.hstack([np.tile(head, (len(b2), 1)), b2, affinity[:, None]])
     return X[0] if bv.ndim == 1 else X
 
 

@@ -76,7 +76,7 @@ def test_perfil_ignora_desconhecido_e_repetido():
     with pytest.raises(ValueError):
         user_profile(_probs(), [98, 99], [5, 5])
 
-from recsys import generate_candidates, pair_features, recommend, split_user
+from recsys import cluster_score, generate_candidates, pair_features, recommend, split_user
 
 
 def test_split_user():
@@ -98,7 +98,7 @@ def _world():
     ids = [1, 2, 3, 4, 5, 6]
     probs = pd.DataFrame({"p_0": [1, 1, 1, 0, 0, 0], "p_1": [0, 0, 0, 1, 1, 1]}, index=pd.Index(ids, name="book_id"), dtype=float)
     pop = pd.Series([10, 100, 50, 1000, 5, 1], index=ids, dtype=float)
-    vecs = pd.DataFrame({"v": np.array(ids) / 10}, index=probs.index)
+    vecs = pd.DataFrame({"v": np.array(ids) / 10}, index=probs.index).join(probs)  # termina com p_0..p_{K-1}
     return probs, pop, vecs
 
 
@@ -116,14 +116,22 @@ class _Seg:
 
 class _Fake:
     def predict_proba(self, X):
-        s = X[:, -1]
+        s = X[:, 3]  # coluna "v" do livro (2 do perfil + 1 do segmento antes dela)
         return np.column_stack([1 - s, s])
 
 
 def test_pair_features_tamanho():
-    X = pair_features(np.array([.5, .5]), np.array([1.0]), np.array([[1, 2, 3], [4, 5, 6]]))
-    assert X.shape == (2, 6)
-    assert pair_features(np.array([.5, .5]), np.array([1.0]), np.array([1, 2, 3])).shape == (6,)
+    # perfil(2) + segmento(1) + livro(3, terminando com 2 probs de cluster) + afinidade(1)
+    X = pair_features(np.array([.5, .5]), np.array([1.0]), np.array([[1, .2, .8], [4, 1., 0.]]))
+    assert X.shape == (2, 7)
+    assert X[:, -1] == pytest.approx([.5, .5])  # afinidade = perfil . probs do livro
+    assert pair_features(np.array([.5, .5]), np.array([1.0]), np.array([1, .2, .8])).shape == (7,)
+
+
+def test_cluster_score():
+    probs = np.array([[1.0, 0.0], [0.0, 1.0]])
+    s = cluster_score(np.array([1.0, 0.0]), probs, np.array([10.0, 10.0]))
+    assert s[0] == pytest.approx(np.log1p(10)) and s[1] == 0
 
 
 def test_recommend_com_modelo_fake():
