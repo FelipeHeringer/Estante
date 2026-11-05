@@ -4,3 +4,6 @@
 *.csv
 __pycache__/
 .claude/
+.pytest_cache/
+*.joblib
+figures/
