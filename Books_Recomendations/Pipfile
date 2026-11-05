@@ -10,9 +10,11 @@ matplotlib = "*"
 orjson = "*"
 pyarrow = "*"
 scipy = "*"
+scikit-learn = "*"
 
 [dev-packages]
 nbconvert = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.14"
