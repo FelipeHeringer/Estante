@@ -96,3 +96,9 @@ def recommend(read_ids, ratings, book_probs, popularity, user_gmm_pipeline, mode
     X = pair_features(profile, segment, book_vectors.loc[cands].to_numpy())
     score = model.predict_proba(X)[:, 1]
     return [cands[i] for i in np.argsort(-score, kind="stable")[:top_n]]
+
+
+def clr(x, eps=1e-6):
+    """Log-razão centrada: tira vetores de proporção do simplex (zeros viram eps)."""
+    lx = np.log(np.asarray(x, dtype=float) + eps)
+    return lx - lx.mean(axis=1, keepdims=True)

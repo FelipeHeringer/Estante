@@ -131,3 +131,13 @@ def test_recommend_com_modelo_fake():
     rec = recommend([1, 2], [5, 5], probs, pop, _Seg(), _Fake(), vecs, top_n=3, n_candidates=10)
     assert rec == [6, 5, 4]  # maior valor de v primeiro
     assert not {1, 2} & set(rec)
+
+from recsys import clr
+
+
+def test_clr_centra_e_aguenta_zero():
+    x = np.array([[0.5, 0.5, 0.0], [1.0, 0.0, 0.0]])
+    z = clr(x)
+    assert z.shape == x.shape and np.isfinite(z).all()
+    assert z.sum(axis=1) == pytest.approx([0, 0], abs=1e-9)
+    assert z[0, 0] == pytest.approx(z[0, 1])
